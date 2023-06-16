@@ -5,24 +5,29 @@
 #include <stdbool.h>
 #include "tree.h"
 
+// Macro útil para alocar memória e zerar ela
 #define alloc(ty) calloc(sizeof(ty), 1)
+
+#define MORSE_MAX_SIZE sizeof(((Node*)0)->morse)
 
 Tree* tree_new(void) {
     Tree* t = alloc(Tree);
     return t;
 }
 
+// Alloca e inicializa um nó
 static Node* new_node(char* morse, char alpha) {
     Node* node = alloc(Node);
     // Segurança nunca é demais
-    const size_t morse_max_size = sizeof(node->morse);
-    strncpy(node->morse, morse, morse_max_size);
-    node->morse[morse_max_size-1] = '\0';
+    strncpy(node->morse, morse, MORSE_MAX_SIZE);
+    node->morse[MORSE_MAX_SIZE-1] = '\0';
 
     node->alpha = alpha;
     return node;
 }
 
+// Apesar da função se chamar `node_swap`, o que ela faz é trocar o valor do
+// codigo morse e da letra.
 static void node_swap(Node** a, Node** b) {
     (*a)->left =  (*b)->left;
     (*a)->right = (*b)->right;
@@ -33,6 +38,8 @@ static void node_swap(Node** a, Node** b) {
     *a = aux;
 }
 
+// Insire um nó na subarvore atual. `level` é necessária para sabermos qual
+// caractere estamos comparando agora.
 static void node_insert(Node* t, Node* new, int8_t level) {
     Node** next;
     if(new->morse[level] == '.') {
@@ -50,6 +57,22 @@ static void node_insert(Node* t, Node* new, int8_t level) {
         }
         node_insert(*next, new, level+1);
     }
+}
+
+
+// Procura por uma letra dentro da arvore.
+// O programa atual não precisa dessa função, mas ela pode ser útil no futuro.
+char* tree_search_aplha(Tree* t, char alpha) {
+    if(t == NULL) return NULL;
+
+    if(t->alpha == alpha) {
+        return t->morse;
+    }
+    char* morse = tree_search_aplha(t->left, alpha);
+    if(morse == NULL) {
+        morse = tree_search_aplha(t->right, alpha);
+    }
+    return morse;
 }
 
 void tree_insert(Tree* t, char* code, char alpha) {
@@ -92,7 +115,7 @@ void tree_print(Tree* t) {
 }
 
 static char node_get(Node* n, char* code, int l) {
-    if(n == NULL || l >= 5) {
+    if(n == NULL || (unsigned long)l >= MORSE_MAX_SIZE) {
         return '\0';
     } 
     if (strcmp(code, n->morse) == 0){

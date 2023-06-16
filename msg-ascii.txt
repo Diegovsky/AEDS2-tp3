@@ -1,0 +1,11 @@
+essa eh uma mensagem de testes
+sera que funciona
+
+so ha um jeito de descobrir
+
+alias o codigo atual pula linhas vazias
+
+por motivos de simplicidade o tamanho maximo do arquivo eh 1024
+123456789
+
+gostei bastante de fazer o trabalho

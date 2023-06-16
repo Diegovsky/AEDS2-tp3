@@ -13,5 +13,6 @@ typedef Node Tree;
 Tree* tree_new(void);
 void tree_insert(Tree* t, char* morse, char alpha);
 char tree_get(Tree* t, char* morse);
+char* tree_search_aplha(Tree* t, char alpha);
 void tree_print(Tree* t);
 void tree_destroy(Tree* t);

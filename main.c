@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
+#include <assert.h>
 #include "tree.h"
 
 void fill_morse(Tree* t) {
@@ -44,24 +46,28 @@ void fill_morse(Tree* t) {
     tree_insert(t, "----.", '9');
 }
 
-char** strsspc(const char* txt) {
+// Splits a string by spaces
+char** strsplit(const char* txt, char* sep) {
     const char* cursor = txt;
     int count = 0;
-    char* buf = malloc(strlen(txt)+1);
+    unsigned long blocklen = strlen(txt)+1;
+    char* buf = malloc(blocklen);
+    buf[0] = '\0';
     char* cursor2 = buf;
-    while(1) {
-        // Skip multiple spaces
-        while(cursor[0] == ' ') cursor++;
-        int len = strcspn(cursor, " ");
+    while(cursor[0] != '\0') {
+        // Skip multiple separators
+        int len = strcspn(cursor, sep);
+        if(len == 0) {
+            cursor++;
+            continue;
+        }
+        assert((unsigned long)(cursor2-buf + len) <= blocklen);
         memcpy(cursor2, cursor, len);
-        cursor2[len] = '\0';
         cursor += len;
+        cursor2[len] = '\0';
         cursor2 += len+1;
         count++;
-        if(cursor[0] == '\0') break;
-        cursor++;
     }
-    int blocklen = (cursor - txt)+1;
     buf = realloc(buf, blocklen + (count+1)*sizeof(char*));
     char** strs = (char**)(buf + blocklen);
     cursor2 = buf;
@@ -77,19 +83,13 @@ void freestrs(char** strs) {
     free(strs[0]);
 }
 
+// Remove trailing \n
 void strim(char* str) {
     str[strcspn(str, "\n")] = '\0';
 }
 
-int main(int argc, char **argv) {
-    Tree* t = tree_new();
-    fill_morse(t);
-    // Insert morse code table
-    tree_print(t);
-    char code[200];
-    fgets(code, 200, stdin);
-    strim(code);
-    char** strs = strsspc(code);
+void convert_from_morse(Tree* t, const char* code) {
+    char** strs = strsplit(code, " ");
     for(int word = 0; strs[word] != NULL; word++) {
         char c;
         if (*strs[word] == '/') {
@@ -104,6 +104,53 @@ int main(int argc, char **argv) {
     }
     putchar('\n');
     freestrs(strs);
+}
 
+void convert_from_ascii(Tree* t, const char* code) {
+    for(int word = 0; code[word] != '\0'; word++) {
+        char* c;
+        if (code[word] == ' ') {
+            c = "/";
+        } else {
+            c = tree_search_aplha(t, code[word]);
+            if(c == NULL) {
+                c = "?";
+            }
+        }
+        printf("%s ", c);
+    }
+    putchar('\n');
+}
+
+int main(int argc, char **argv) {
+    Tree* t = tree_new();
+    // Insert morse code table
+    fill_morse(t);
+    // tree_print(t);
+    char* filename;
+    if(argc == 1) {
+        filename = "msg.txt";
+    } else {
+        filename = argv[1];
+    }
+    FILE* f = fopen(filename, "r");
+    if(f == NULL) {
+        fprintf(stderr, "Arquivo '%s' não encontrado!\n", filename);
+        return 1;
+    }
+    char* buf = malloc(1024);
+    int read = fread(buf, 1, 1024, f);
+    buf[read] = '\0';
+    char** lines = strsplit(buf, "\n");
+    for(char** phrase = lines; *phrase != NULL; phrase++) {
+#ifdef DECOD_MORSE
+    convert_from_morse(t, *phrase);
+#else
+    convert_from_ascii(t, *phrase);
+#endif
+    }
     tree_destroy(t);
+    fclose(f);
+    freestrs(lines);
+    free(buf);
 }

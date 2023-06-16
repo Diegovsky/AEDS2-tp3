@@ -1,0 +1,20 @@
+# Sistema operacional utilizado
+Arch Linux
+
+# Como compilar
+Você precisará dos pacotes meson e ninja.
+
+# Instruções de compilação
+Escola um nome para a pasta em que os arquivos vão ficar salvos. No exemplo a seguir, escolhi o nome `build`:
+```bash
+meson setup build
+ninja -C build
+```
+
+# Como executar
+Após a compilação, arquivos serão criados na pasta `build/` com o nome dos respectivos procedimentos. Para executar algum, basta o chamar da seguinte forma no terminal: `build/tp3-decod-<procedimento> [arquivo]`. Se nenhum arquivo for dado, os programas vão ler o arquivo `msg.txt`
+
+# Comentários
+Esse arquivo é markdown válido
+
+vim: ft=markdown

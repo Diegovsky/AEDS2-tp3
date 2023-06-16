@@ -4,6 +4,5 @@ project('tp3', 'c',
 
 tree = library('tree', 'tree.c', 'tree.h')
 
-exe = executable('tp3', 'main.c', link_with: tree)
-
-run_target('run', command: exe)
+exe = executable('tp3-decod-morse', 'main.c', c_args: ['-DDECOD_MORSE'], link_with: tree)
+exe = executable('tp3-decod-ascii', 'main.c', link_with: tree)
